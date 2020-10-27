@@ -1,0 +1,3 @@
+
+class MissingShapeError(ValueError): pass
+
