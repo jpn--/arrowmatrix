@@ -32,7 +32,7 @@ with resource_usage:
     668 ms: Net 277 MB, Total 7.73 GB
 
 
-# Parquet Matrix
+## Parquet Matrix
 
 Contrast that with the first of two formats of arrow matrix, ParquetMatrix.  
 As we did above using the `skims_dict`, let's open the matrix reference itself first.
@@ -117,7 +117,7 @@ otaz2, dtaz2 = otaz[:50], dtaz[:50]
 
 But what if I want the speed of in-memory data, but without actually needing to allocate all that memory?
 
-# Feather Matrix
+## Feather Matrix
 
 
 ```python
