@@ -160,3 +160,48 @@ Assuming a large enough chunk size, either format performs better than
 the current ActivitySim implementation.  Even with a quite small chunk size,
 the feather format performs reasonably well and with no RAM footprint.
 
+
+
+
+# Implementation Details
+
+- arrowmatrix uses the Apache Arrow table format as its basis.
+  Each matrix data table is stored as a column in this table.
+
+- As data for matrix tables is stored in a single column 
+  (essentially, a vector) and the matrix shape is implicit--
+  data for matrix tables is stored in the table in row-major 
+  order and implementation will need to account for this.
+
+- While the openmatrix standard includes both two dimensional 
+  'data' and one dimensional 'lookup' arrays, arrowmatrix eschews
+  this (in part due to limitations of the Arrow format), and 
+  instead requires that all data elements be exactly the same
+  shape.
+
+- arrowmatrix can be any number of dimensions, not just 2.  The
+  shape of the matrix is stored in metadata as a bytestring in the
+  representation format of a Python tuple.  For example, a matrix
+  file that is 25 by 25 is b'(25,25)'.  The one dimensional lookups
+  can simply be stored in a different file with shape '(25,)'. 
+  Similarly, matrix tables that used to be grouped logically simply
+  by name can instead be arranged explicitly with three or more 
+  dimensions.
+  
+- Any data type you can store with Arrow, you can store in an 
+  arrowmatrix.
+
+- Both Parquet and Feather file formats are legit storage formats.
+  Each has distinct advantages and disadvantages, especially with
+  respect to file size and read/write speed.  Both formats can store
+  the necessary metadata. 
+  
+- Uncompressed Feather data files, while useful in certain applications, 
+  should not be used to transfer data between users or over a network.
+  Beyond that, it is unclear whether compressed Feather or Parquet
+  formats will be better for transportation planning applications.
+  
+- Chunk size: this demo uses a full-table chunk size. This may not be
+  the best solution; technical demos with different chunk size (a.k.a.
+  row group size in Parquet) are welcomed.
+  
