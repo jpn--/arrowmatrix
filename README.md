@@ -173,20 +173,37 @@ the feather format performs reasonably well and with no RAM footprint.
   data for matrix tables is stored in the table in row-major 
   order and implementation will need to account for this.
 
-- While the openmatrix standard includes both two dimensional 
+- ~~While the openmatrix standard includes both two dimensional 
   'data' and one dimensional 'lookup' arrays, arrowmatrix eschews
   this (in part due to limitations of the Arrow format), and 
   instead requires that all data elements be exactly the same
-  shape.
+  shape.~~
+  
+- While the openmatrix standard includes two dimensional 
+  'data' arrays, arrowmatrix allows any number of dimensions.
+  It is still enforced that all data arrays stored in the same
+  file are the same shape.
 
+- One dimensional lookup values should be stored in Feather 
+  format, 'zstd' compressed, as an arrow buffer in the file's
+  metadata. (TODO: provide a demo of this.)  
+  
 - arrowmatrix can be any number of dimensions, not just 2.  The
   shape of the matrix is stored in metadata as a bytestring in the
   representation format of a Python tuple.  For example, a matrix
-  file that is 25 by 25 is b'(25,25)'.  The one dimensional lookups
-  can simply be stored in a different file with shape '(25,)'. 
+  file that is 25 by 25 is b'(25,25)'.  One dimensional arrays
+  can be stored as lookup metadata, or can also be stored in a 
+  different file with shape '(25,)'. 
   Similarly, matrix tables that used to be grouped logically simply
   by name can instead be arranged explicitly with three or more 
-  dimensions.
+  dimensions, e.g. b'(25,25,3)' for 3 time periods.
+  
+- For debate: should lookup values be bound to the dimensions 
+  explicitly?  In current openmatrix, they are not, although
+  typically matrix files are square with common lookups or 
+  non-square which makes the bindings obvious.  By allowing
+  more dimensions, there is more risk of two dimensions having 
+  the same cardinality but different meanings.
   
 - Any data type you can store with Arrow, you can store in an 
   arrowmatrix.

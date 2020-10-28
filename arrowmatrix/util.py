@@ -4,6 +4,9 @@ import timeit
 import resource
 import time
 import numpy as np
+import pyarrow as pa
+import pandas as pd
+import pyarrow.feather as pf
 try:
 	import psutil
 except:
@@ -86,3 +89,33 @@ def timing(stmt, setup='pass', repeat=10, globals=None, quiet=False):
 			print(f"{_mean} ± {_std} per run (mean ± std of {repeat} runs), {_min} to {_max}")
 	return timings
 
+
+def to_simple_buffer(table, compression="zstd"):
+	"""
+	Write a pandas DataFrame to a pyarrow buffer, stripping pandas metadata.
+
+	Parameters
+	----------
+	table : pyarrow.Table or pandas.DataFrame
+	compression : {'zstd', 'lz4', 'uncompressed'}
+
+	Returns
+	-------
+	pyarrow.buffer
+	"""
+	if isinstance(table, pd.DataFrame):
+		table = pa.Table.from_pandas(
+			table, preserve_index=False, nthreads=None, columns=None,
+		)
+		# strip pandas metadata
+		table = pa.Table.from_batches(
+			table.to_batches(),
+			schema=table.schema.with_metadata(None),
+		)
+	sink = pa.BufferOutputStream()
+	pf.write_feather(
+		table,
+		sink,
+		compression=compression,
+	)
+	return sink.getvalue()
