@@ -4,22 +4,23 @@ import json
 import numpy as np
 import pandas as pd
 import pyarrow.feather as pf
+import pyarrow.ipc as ipc
 from .common import AbstractArrowMatrix
 
 
 class FeatherMatrix(AbstractArrowMatrix):
 
-	def __init__(self, filename):
+	def __init__(self, filename, memory_map=True):
 		self.filename = filename
-		schema = pf.read_table(filename, columns=[0]).schema
-		self._column_defs = pd.DataFrame(json.loads(schema.metadata[b'pandas'])['columns'])
+		schema = ipc.open_file(filename).schema
+		self._column_defs = schema.names
 		omx_version = schema.metadata[b'OMX_VERSION'].decode()
 		shape = ast.literal_eval(schema.metadata[b'SHAPE'].decode())
 		super().__init__(filename=filename, shape=shape, omx_version=omx_version)
-		self._table = pf.read_table(self.filename, memory_map=True)
+		self._table = pf.read_table(self.filename, memory_map=memory_map)
 
 	def list_matrices(self):
-		return self._column_defs['name']
+		return self._column_defs
 
 	def _get_arrow_table(self, names=None):
 		"""

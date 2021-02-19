@@ -322,6 +322,28 @@ class AbstractArrowMatrix(ABC):
 	def get_raw(self, names=None):
 		return self._get_arrow_table(names=names).to_pandas()
 
+	def get_rc_table(self, names, *indexes):
+		"""
+		Extract values by index.
+
+		Parameters
+		----------
+		names : str or Collection[str]
+			The names of one or more matrix tables to load.
+		*indexes : array-like or int
+			The various index positions to load.  The number
+			of tuple values must match the number of dimensions.
+
+		Returns
+		-------
+		pyarrow.Table
+		"""
+		takers, _ = self._takers(*indexes, attach_index=False)
+		if isinstance(names, str):
+			return self._get_arrow_table(names=[names]).take(takers)
+		else:
+			return self._get_arrow_table(names=names).take(takers)
+
 	def get_rc(self, names, *indexes, method=4, attach_index=True, dtype='float64'):
 		"""
 		Extract values by index.
